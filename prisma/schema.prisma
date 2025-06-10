@@ -1,0 +1,50 @@
+// Prisma schema for your app
+// Database: (defaulting to PostgreSQL, can be changed if needed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  wallet_address   String   @id
+  username         String?
+  bio              String?
+  profile_pic_url  String?
+  posts            Post[]
+  likes            Like[]
+  comments         Comment[]
+}
+
+model Post {
+  id              Int       @id @default(autoincrement())
+  wallet_address  String
+  content         String
+  timestamp       DateTime  @default(now())
+  user            User      @relation(fields: [wallet_address], references: [wallet_address])
+  likes           Like[]
+  comments        Comment[]
+}
+
+model Like {
+  post_id         Int
+  wallet_address  String
+  post            Post      @relation(fields: [post_id], references: [id])
+  user            User      @relation(fields: [wallet_address], references: [wallet_address])
+
+  @@id([post_id, wallet_address])
+}
+
+model Comment {
+  id              Int       @id @default(autoincrement())
+  post_id         Int
+  wallet_address  String
+  content         String
+  timestamp       DateTime  @default(now())
+  post            Post      @relation(fields: [post_id], references: [id])
+  user            User      @relation(fields: [wallet_address], references: [wallet_address])
+}
