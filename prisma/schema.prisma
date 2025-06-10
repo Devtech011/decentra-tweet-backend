@@ -18,6 +18,8 @@ model User {
   posts            Post[]
   likes            Like[]
   comments         Comment[]
+
+  @@map("users")
 }
 
 model Post {
@@ -28,15 +30,18 @@ model Post {
   user            User      @relation(fields: [wallet_address], references: [wallet_address])
   likes           Like[]
   comments        Comment[]
+
+  @@map("posts")
 }
 
 model Like {
   post_id         Int
   wallet_address  String
-  post            Post      @relation(fields: [post_id], references: [id])
-  user            User      @relation(fields: [wallet_address], references: [wallet_address])
+  post            Post     @relation(fields: [post_id], references: [id])
+  user            User     @relation(fields: [wallet_address], references: [wallet_address])
 
   @@id([post_id, wallet_address])
+  @@map("likes")
 }
 
 model Comment {
@@ -47,4 +52,6 @@ model Comment {
   timestamp       DateTime  @default(now())
   post            Post      @relation(fields: [post_id], references: [id])
   user            User      @relation(fields: [wallet_address], references: [wallet_address])
+
+  @@map("comments")
 }

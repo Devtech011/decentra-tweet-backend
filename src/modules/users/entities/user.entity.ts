@@ -1,4 +1,7 @@
-import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { Post } from '../../posts/entities/post.entity';
+import { Comment } from '../../posts/entities/comment.entity';
+import { Like } from '../../posts/entities/like.entity';
 
 @Entity('users')
 export class User {
@@ -14,9 +17,12 @@ export class User {
   @Column({ name: 'profile_pic_url', nullable: true })
   profile_pic_url: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  created_at: Date;
+  @OneToMany(() => Post, post => post.user)
+  posts: Post[];
 
-  @UpdateDateColumn({ name: 'updated_at' })
-  updated_at: Date;
+  @OneToMany(() => Comment, comment => comment.user)
+  comments: Comment[];
+
+  @OneToMany(() => Like, like => like.user)
+  likes: Like[];
 } 

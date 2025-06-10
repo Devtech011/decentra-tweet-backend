@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../modules/users/entities/user.entity';
+import { Post } from '../modules/posts/entities/post.entity';
+import { Comment } from '../modules/posts/entities/comment.entity';
+import { Like } from '../modules/posts/entities/like.entity';
 
 @Module({
   imports: [
@@ -11,10 +14,10 @@ import { User } from '../modules/users/entities/user.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'decentra_tweet',
-      entities: [User],
-      synchronize: process.env.NODE_ENV !== 'production', // Don't use in production!
+      entities: [User, Post, Comment, Like],
+      synchronize: false, // Disabled to prevent conflicts with Prisma
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Post, Comment, Like]),
   ],
   exports: [TypeOrmModule],
 })

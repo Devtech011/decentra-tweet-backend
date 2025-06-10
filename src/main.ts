@@ -8,9 +8,9 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS
+  // Enable CORS for all origins
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'], // Add your frontend URLs
+    origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
