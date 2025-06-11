@@ -118,29 +118,157 @@ POST /posts/:id/like
 }
 ```
 
-## Database Schema
+## Database Management with Prisma
 
-The application uses the following main tables:
+### Prisma Setup
 
-- `users` - User profiles
-- `posts` - User posts
-- `comments` - Post comments
-- `likes` - Post likes
+1. Install Prisma CLI globally (if not already installed):
+```bash
+npm install -g prisma
+```
+
+2. Initialize Prisma in your project (if not already done):
+```bash
+npx prisma init
+```
+
+### Database Migrations
+
+1. **Create a new migration**
+```bash
+# After making changes to your schema.prisma file
+npx prisma migrate dev --name <migration-name>
+```
+Example:
+```bash
+npx prisma migrate dev --name add_user_profile
+```
+
+2. **Apply migrations to production**
+```bash
+npx prisma migrate deploy
+```
+
+3. **Reset database** (Warning: This will delete all data)
+```bash
+npx prisma migrate reset
+```
+
+4. **View migration history**
+```bash
+npx prisma migrate status
+```
+
+### Database Backup and Restore
+
+1. **Create a database backup**
+```bash
+# Create a backup file
+pg_dump -U postgres -d decentra_tweet -F c -f decentra_tweet_backup.dump
+```
+
+2. **Restore from backup**
+```bash
+# Restore from backup file
+pg_restore -U postgres -d decentra_tweet -c decentra_tweet_backup.dump
+```
+
+### Prisma Studio
+
+To view and manage your database through a GUI:
+```bash
+npx prisma studio
+```
+This will open Prisma Studio at `http://localhost:5555`
+
+### Common Prisma Commands
+
+```bash
+# Generate Prisma Client after schema changes
+npx prisma generate
+
+# Format your schema.prisma file
+npx prisma format
+
+# Validate your schema.prisma file
+npx prisma validate
+
+# Push schema changes to database without migrations
+npx prisma db push
+```
+
+### Database Schema
+
+The application uses the following main tables (defined in `prisma/schema.prisma`):
+
+```prisma
+model User {
+  id            Int       @id @default(autoincrement())
+  wallet_address String   @unique
+  username      String?
+  profile_pic_url String?
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model Post {
+  id            Int       @id @default(autoincrement())
+  wallet_address String
+  content       String
+  timestamp     DateTime  @default(now())
+  user          User      @relation(fields: [wallet_address], references: [wallet_address])
+  comments      Comment[]
+  likes         Like[]
+}
+
+model Comment {
+  id            Int       @id @default(autoincrement())
+  post_id       Int
+  wallet_address String
+  content       String
+  timestamp     DateTime  @default(now())
+  post          Post      @relation(fields: [post_id], references: [id])
+  user          User      @relation(fields: [wallet_address], references: [wallet_address])
+}
+
+model Like {
+  id            Int       @id @default(autoincrement())
+  post_id       Int
+  wallet_address String
+  timestamp     DateTime  @default(now())
+  post          Post      @relation(fields: [post_id], references: [id])
+  user          User      @relation(fields: [wallet_address], references: [wallet_address])
+
+  @@unique([post_id, wallet_address])
+}
+```
+
+### Troubleshooting Database Issues
+
+1. **Reset database and apply migrations**
+```bash
+npx prisma migrate reset --force
+```
+
+2. **Check database connection**
+```bash
+npx prisma db pull
+```
+
+3. **View database logs**
+```bash
+# For PostgreSQL
+psql -U postgres -d decentra_tweet -c "SELECT * FROM pg_stat_activity;"
+```
 
 ## Development
 
 ### Running Tests
 ```bash
 npm run test
-```
-
-### Database Migrations
-```bash
-# Create a new migration
-npx prisma migrate dev --name <migration-name>
-
-# Apply migrations
-npx prisma migrate deploy
 ```
 
 ### Code Generation
