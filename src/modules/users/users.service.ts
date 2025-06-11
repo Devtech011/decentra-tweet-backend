@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -49,5 +49,33 @@ export class UsersService {
       throw new NotFoundException(MESSAGES.USER.ERROR.NOT_FOUND);
     }
     return user;
+  }
+
+  async upsertUserProfile(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const walletAddress = createUserDto.wallet_address.toLowerCase();
+      
+      // Try to find existing user
+      let user = await this.usersRepository.findOne({
+        where: { wallet_address: walletAddress },
+      });
+
+      if (user) {
+        // Update existing user
+        user.username = createUserDto.username || user.username;
+        user.profile_pic_url = createUserDto.profile_pic_url || user.profile_pic_url;
+        return this.usersRepository.save(user);
+      } else {
+        // Create new user
+        const newUser = this.usersRepository.create({
+          wallet_address: walletAddress,
+          username: createUserDto.username,
+          profile_pic_url: createUserDto.profile_pic_url,
+        });
+        return this.usersRepository.save(newUser);
+      }
+    } catch (error) {
+      throw new BadRequestException('Failed to create or update user profile');
+    }
   }
 }
